@@ -14,17 +14,17 @@ document.getElementById('registrationForm').addEventListener('submit', function(
         return;
     }
 
-    // Save data to local storage
+    // Create user object and store it in localStorage
     const user = { name, email, password, dob, termsAccepted };
     let users = JSON.parse(localStorage.getItem('users')) || [];
     users.push(user);
     localStorage.setItem('users', JSON.stringify(users));
 
-    // Reset form
-    document.getElementById('registrationForm').reset();
-
     // Display the updated user list
     displayUsers();
+
+    // Reset form
+    document.getElementById('registrationForm').reset();
 });
 
 // Function to validate the age based on DOB
@@ -42,11 +42,11 @@ function validateDob(dob) {
     return age >= 18 && age <= 55;
 }
 
-// Function to display users from local storage in the table
+// Function to display users from localStorage in the table
 function displayUsers() {
     const users = JSON.parse(localStorage.getItem('users')) || [];
     const tableBody = document.querySelector('#userTable tbody');
-    tableBody.innerHTML = '';
+    tableBody.innerHTML = '';  // Clear the existing table rows
 
     users.forEach(user => {
         const row = document.createElement('tr');
