@@ -1,70 +1,67 @@
-// Load stored data when the page loads
-document.addEventListener('DOMContentLoaded', function () {
-    loadStoredData(); // Load data from local storage
-});
-
-// Handle form submission
-document.getElementById('registration-form').addEventListener('submit', function(event) {
+document.getElementById('registrationForm').addEventListener('submit', function(event) {
     event.preventDefault();
-    
-    // Retrieve form values
+
+    // Collect form data
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    const dob = new Date(document.getElementById('dob').value);
-    const acceptTerms = document.getElementById('accept-terms').checked;
+    const dob = document.getElementById('dob').value;
+    const termsAccepted = document.getElementById('terms').checked;
 
-    // Validate date of birth (age between 18 and 55)
-    const today = new Date();
-    const minAge = new Date(today.getFullYear() - 55, today.getMonth(), today.getDate());
-    const maxAge = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-
-    if (dob > maxAge || dob < minAge) {
-        alert('Date of birth must be between 18 and 55 years ago.');
+    // Validate DOB
+    if (!validateDob(dob)) {
+        alert("Date of birth must be for ages between 18 and 55.");
         return;
     }
 
-    // Create new data object
-    const newData = {
-        name: name,
-        email: email,
-        password: password,
-        dob: dob.toISOString().split('T')[0], // Format DOB as YYYY-MM-DD
-        acceptTerms: acceptTerms
-    };
-
     // Save data to local storage
-    saveToLocalStorage(newData);
-    
-    // Append the new data to the table immediately
-    appendDataToTable(newData);
+    const user = { name, email, password, dob, termsAccepted };
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    users.push(user);
+    localStorage.setItem('users', JSON.stringify(users));
 
-    // Clear the form after submission
-    document.getElementById('registration-form').reset();
+    // Reset form
+    document.getElementById('registrationForm').reset();
+
+    // Display the updated user list
+    displayUsers();
 });
 
-// Function to save data to local storage
-function saveToLocalStorage(data) {
-    let storedData = JSON.parse(localStorage.getItem('registrationData')) || [];
-    storedData.push(data);
-    localStorage.setItem('registrationData', JSON.stringify(storedData));
+// Function to validate the age based on DOB
+function validateDob(dob) {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const dayDiff = today.getDate() - birthDate.getDate();
+
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age--;
+    }
+
+    return age >= 18 && age <= 55;
 }
 
-// Function to load stored data from local storage on page load
-function loadStoredData() {
-    const storedData = JSON.parse(localStorage.getItem('registrationData')) || [];
-    storedData.forEach(data => {
-        appendDataToTable(data);
+// Function to display users from local storage in the table
+function displayUsers() {
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const tableBody = document.querySelector('#userTable tbody');
+    tableBody.innerHTML = '';
+
+    users.forEach(user => {
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${user.password}</td>
+            <td>${user.dob}</td>
+            <td>${user.termsAccepted ? 'Yes' : 'No'}</td>
+        `;
+
+        tableBody.appendChild(row);
     });
 }
 
-// Function to append data to the table
-function appendDataToTable(data) {
-    const table = document.querySelector('table tbody');
-    const row = table.insertRow();
-    row.insertCell(0).textContent = data.name;
-    row.insertCell(1).textContent = data.email;
-    row.insertCell(2).textContent = data.password;
-    row.insertCell(3).textContent = data.dob;
-    row.insertCell(4).textContent = data.acceptTerms ? 'Yes' : 'No';
-}
+// Load users when the page is loaded
+window.onload = displayUsers;
