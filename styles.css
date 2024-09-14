@@ -3,13 +3,8 @@
 }
 body {
     font-family: Arial, sans-serif;
-    background-color:gray;
 }
-.container{
-    width:400px;
-    height:700px;
-    
-    
+
 form {
     margin-bottom: 20px;
 }
