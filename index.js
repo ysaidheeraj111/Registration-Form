@@ -1,31 +1,5 @@
-document.getElementById('registrationForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    // Collect form data
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const dob = document.getElementById('dob').value;
-    const termsAccepted = document.getElementById('terms').checked;
-
-    // Validate DOB
-    if (!validateDob(dob)) {
-        alert("Date of birth must be for ages between 18 and 55.");
-        return;
-    }
-
-    // Create user object and store it in localStorage
-    const user = { name, email, password, dob, termsAccepted };
-    let users = JSON.parse(localStorage.getItem('users')) || [];
-    users.push(user);
-    localStorage.setItem('users', JSON.stringify(users));
-
-    // Display the updated user list
-    displayUsers();
-
-    // Reset form
-    document.getElementById('registrationForm').reset();
-});
+const fs = require('fs');
+const readline = require('readline');
 
 // Function to validate the age based on DOB
 function validateDob(dob) {
@@ -42,26 +16,67 @@ function validateDob(dob) {
     return age >= 18 && age <= 55;
 }
 
-// Function to display users from localStorage in the table
+// Function to load users from a file
+function loadUsers() {
+    if (fs.existsSync('users.json')) {
+        const data = fs.readFileSync('users.json');
+        return JSON.parse(data);
+    }
+    return [];
+}
+
+// Function to save users to a file
+function saveUsers(users) {
+    fs.writeFileSync('users.json', JSON.stringify(users, null, 2));
+}
+
+// Function to display users
 function displayUsers() {
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    const tableBody = document.querySelector('#userTable tbody');
-    tableBody.innerHTML = '';  // Clear the existing table rows
-
+    const users = loadUsers();
+    console.log("\nRegistered Users:");
+    console.log("-----------------");
     users.forEach(user => {
-        const row = document.createElement('tr');
-
-        row.innerHTML = `
-            <td>${user.name}</td>
-            <td>${user.email}</td>
-            <td>${user.password}</td>
-            <td>${user.dob}</td>
-            <td>${user.termsAccepted ? 'Yes' : 'No'}</td>
-        `;
-
-        tableBody.appendChild(row);
+        console.log(`Name: ${user.name}, Email: ${user.email}, Password: ${user.password}, DOB: ${user.dob}, Accepted terms? ${user.termsAccepted}`);
     });
 }
 
-// Load users when the page is loaded
-window.onload = displayUsers;
+// Command line input handling
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+// Start the prompt to collect form data
+function registerUser() {
+    rl.question('Name: ', (name) => {
+        rl.question('Email: ', (email) => {
+            rl.question('Password: ', (password) => {
+                rl.question('Date of Birth (YYYY-MM-DD): ', (dob) => {
+                    // Validate DOB
+                    if (!validateDob(dob)) {
+                        console.log("Date of birth must be for ages between 18 and 55.");
+                        rl.close();
+                        return;
+                    }
+
+                    rl.question('Accept terms? (yes/no): ', (termsAnswer) => {
+                        const termsAccepted = termsAnswer.toLowerCase() === 'yes';
+
+                        // Collect user data
+                        const user = { name, email, password, dob, termsAccepted };
+                        let users = loadUsers();
+                        users.push(user);
+                        saveUsers(users);
+
+                        console.log("\nUser registered successfully!");
+                        displayUsers();
+                        rl.close();
+                    });
+                });
+            });
+        });
+    });
+}
+
+// Run the registration process
+registerUser();
