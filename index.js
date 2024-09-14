@@ -1,3 +1,7 @@
+document.addEventListener('DOMContentLoaded', function () {
+    loadStoredData(); // Load data from local storage when the page loads
+});
+
 document.getElementById('registration-form').addEventListener('submit', function(event) {
     event.preventDefault();
     
@@ -8,7 +12,7 @@ document.getElementById('registration-form').addEventListener('submit', function
     const dob = new Date(document.getElementById('dob').value);
     const acceptTerms = document.getElementById('accept-terms').checked;
 
-    // Validate date of birth
+    // Validate date of birth (age between 18 and 55)
     const today = new Date();
     const minAge = new Date(today.getFullYear() - 55, today.getMonth(), today.getDate());
     const maxAge = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
@@ -19,20 +23,43 @@ document.getElementById('registration-form').addEventListener('submit', function
     }
 
     // Save data to local storage
-    localStorage.setItem('registrationData', JSON.stringify({
-        name,
-        email,
-        password,
-        dob: dob.toISOString().split('T')[0],
-        acceptTerms
-    }));
+    const newData = {
+        name: name,
+        email: email,
+        password: password,
+        dob: dob.toISOString().split('T')[0], // Format DOB as YYYY-MM-DD
+        acceptTerms: acceptTerms
+    };
 
-    // Append data to table
+    saveToLocalStorage(newData); // Save data to local storage
+    appendDataToTable(newData);  // Immediately add data to the table
+
+    // Clear the form after submission
+    document.getElementById('registration-form').reset();
+});
+
+// Function to save data to local storage
+function saveToLocalStorage(data) {
+    let storedData = JSON.parse(localStorage.getItem('registrationData')) || [];
+    storedData.push(data);
+    localStorage.setItem('registrationData', JSON.stringify(storedData));
+}
+
+// Function to load stored data from local storage on page load
+function loadStoredData() {
+    const storedData = JSON.parse(localStorage.getItem('registrationData')) || [];
+    storedData.forEach(data => {
+        appendDataToTable(data);
+    });
+}
+
+// Function to append data to the table
+function appendDataToTable(data) {
     const table = document.querySelector('table tbody');
     const row = table.insertRow();
-    row.insertCell(0).textContent = name;
-    row.insertCell(1).textContent = email;
-    row.insertCell(2).textContent = password;
-    row.insertCell(3).textContent = dob.toISOString().split('T')[0];
-    row.insertCell(4).textContent = acceptTerms ? 'Yes' : 'No';
-});
+    row.insertCell(0).textContent = data.name;
+    row.insertCell(1).textContent = data.email;
+    row.insertCell(2).textContent = data.password;
+    row.insertCell(3).textContent = data.dob;
+    row.insertCell(4).textContent = data.acceptTerms ? 'Yes' : 'No';
+}
