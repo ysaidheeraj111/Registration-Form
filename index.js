@@ -63,3 +63,4 @@ function appendDataToTable(data) {
     row.insertCell(3).textContent = data.dob;
     row.insertCell(4).textContent = data.acceptTerms ? 'Yes' : 'No';
 }
+
