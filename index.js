@@ -22,7 +22,7 @@ document.getElementById('registration-form').addEventListener('submit', function
         return;
     }
 
-    // Save data to local storage
+    // Create new data object
     const newData = {
         name: name,
         email: email,
@@ -31,8 +31,9 @@ document.getElementById('registration-form').addEventListener('submit', function
         acceptTerms: acceptTerms
     };
 
-    saveToLocalStorage(newData); // Save data to local storage
-    appendDataToTable(newData);  // Immediately add data to the table
+    // Save data to local storage and update table
+    saveToLocalStorage(newData);
+    appendDataToTable(newData);
 
     // Clear the form after submission
     document.getElementById('registration-form').reset();
@@ -43,11 +44,13 @@ function saveToLocalStorage(data) {
     let storedData = JSON.parse(localStorage.getItem('registrationData')) || [];
     storedData.push(data);
     localStorage.setItem('registrationData', JSON.stringify(storedData));
+    console.log('Data saved to local storage:', storedData); // Debugging line
 }
 
 // Function to load stored data from local storage on page load
 function loadStoredData() {
     const storedData = JSON.parse(localStorage.getItem('registrationData')) || [];
+    console.log('Data loaded from local storage:', storedData); // Debugging line
     storedData.forEach(data => {
         appendDataToTable(data);
     });
@@ -62,5 +65,5 @@ function appendDataToTable(data) {
     row.insertCell(2).textContent = data.password;
     row.insertCell(3).textContent = data.dob;
     row.insertCell(4).textContent = data.acceptTerms ? 'Yes' : 'No';
+    console.log('New row added to table:', data); // Debugging line
 }
-
